@@ -1,41 +1,76 @@
-var Service, Characteristic;
+var Service, Characteristic, uuid;
+
+var inherits = require('util').inherits;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
+  uuid = homebridge.hap.uuid;
+
+  fixInheritance(PBPlatform.PushButton, Characteristic);
+  fixInheritance(PBPlatform.PushButtonService, Service);
+
   homebridge.registerAccessory("homebridge-pushbutton", "PushButton", PushButtonAccessory);
+  homebridge.registerPlatform("homebridge-pushbutton", "PushButton", PBPlatform);
+}
+
+function fixInheritance(subclass, superclass) {
+    var proto = subclass.prototype;
+    inherits(subclass, superclass);
+    subclass.prototype.parent = superclass.prototype;
+    for (var mn in proto) {
+        subclass.prototype[mn] = proto[mn];
+    }
+}
+
+function PBPlatform(log, config) {
+  this.log = log;
+  this.config = config;
 }
 
 function PushButtonAccessory(log, config) {
   this.log = log;
   this.name = config["name"];
-  this.buttonName = config["button_name"] || this.name; // fallback to "name" if you didn't specify an exact "button_name"
-  this.binaryState = 0; // bulb state, default is OFF
+  this.buttonName = config["button_name"] || this.name;
   this.log("Starting a PushButton device with name '" + this.buttonName + "'...");
-//  this.search();
 }
 
-PushButtonAccessory.prototype.getPowerOn = function(callback) {
-  var powerOn = this.binaryState > 0;
-  this.log("Power state for the '%s' is %s", this.buttonName, this.binaryState);
-  callback(null, powerOn);
-}
-
-PushButtonAccessory.prototype.setPowerOn = function(powerOn, callback) {
-  this.binaryState = powerOn ? 1 : 0; // wemo langauge
-  this.log("Set power state on the '%s' to %s", this.buttonName, this.binaryState);
+PushButtonAccessory.prototype.Activate = function(activation, callback) {
+  this.log("Received signal on '%s' = %s", this.buttonName, activation);
   callback(null);
 }
 
 PushButtonAccessory.prototype.getServices = function() {
-    var pushButtonService = new Service.Lightbulb(this.name);
-    
+    var pushButtonService = new PBPlatform.PushButtonService(this.name);
+
     pushButtonService
-      .getCharacteristic(Characteristic.On)
-      .on('get', this.getPowerOn.bind(this))
-      .on('set', this.setPowerOn.bind(this));
-    
+      .getCharacteristic(PBPlatform.PushButton)
+      .on('set', this.Activate.bind(this));
+
     return [pushButtonService];
 }
 
+//
 
+PBPlatform.PushButton = function() {
+  var charUUID = uuid.generate('PBPlatform:customchar:PushButton');
+  Characteristic.call(this, 'Activate', charUUID);
+  this.setProps({
+    format: Characteristic.Formats.BOOL,
+    perms: [Characteristic.Perms.WRITE]
+  });
+  this.value = this.getDefaultValue();
+};
+
+PBPlatform.PushButtonService = function(displayName, subtype) {
+  var serviceUUID = uuid.generate('PBPlatform:customservice:PushButtonService')
+  Service.call(this, displayName, serviceUUID, subtype);
+
+  // Required Characteristics
+  this.addCharacteristic(PBPlatform.PushButton);
+
+  // Optional Characteristics
+  this.addOptionalCharacteristic(Characteristic.Name);
+};
+
+//
