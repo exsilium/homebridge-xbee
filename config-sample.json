@@ -10,9 +10,9 @@
 
     "accessories": [
         {
-            "accessory":      "PushButton",
-            "name":           "Test Button",
-            "button_name":      "Button 1"
+            "accessory":    "PushButton",
+            "name":         "Test Button",
+            "button_name":  "Button 1"
         }
     ],
 
