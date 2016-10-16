@@ -1,23 +1,27 @@
 {
-  "name": "homebridge-pushbutton",
+  "name": "homebridge-xbee",
   "version": "0.0.1",
-  "description": "TBD",
-  "license": "MIT",
+  "description": "Homebridge Plugin for Digi XBee radio modules. Originally built for sliding and swing gate automation. Provides accessory for impulse-button. Target device project can be found from https://github.com/exsilium/pxbee-trigger",
+  "license": "BSD-2-Clause",
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "xbee",
+    "zigbee",
+    "relay"
   ],
   "engines": {
     "node": ">=0.12.0",
-    "homebridge": ">=0.2.0"
+    "homebridge": ">=0.4.0"
   },
   "author": {
     "name": "Sten Feldman"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/exsilium/homebridge-pushbutton.git"
+    "url": "git://github.com/exsilium/homebridge-xbee.git"
   },
   "dependencies": {
-    "request": "^2.65.0"
+    "serialport": "~4.0.3",
+    "xbee-api": "~0.4.3"
   }
 }

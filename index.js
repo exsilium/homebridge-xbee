@@ -1,17 +1,42 @@
 var Service, Characteristic;
+var xbee = require('./xbee');
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  homebridge.registerAccessory("homebridge-pushbutton", "PushButton", PushButtonAccessory);
+  homebridge.registerPlatform("homebridge-xbee", "XBee", XBeePlatform);
+}
+
+function XBeePlatform(log, config) {
+  this.log = log;
+  this.devices = config["devices"];
+  
+  log("Starting discovery...");
+  xbee.init(log, config.port , config.baudrate, config.api_mode);
+}
+
+XBeePlatform.prototype = {
+  accessories: function(callback) {
+    var foundAccessories = [];
+    var count = this.devices.length;
+    
+    for(index=0; index< count; ++index){
+		  var accessory  = new PushButtonAccessory(this.log, this.devices[index]);
+		  foundAccessories.push(accessory);
+	  }
+	
+	  callback(foundAccessories);
+  }
 }
 
 function PushButtonAccessory(log, config) {
   this.log = log;
   this.name = config["name"];
   this.buttonName = config["button_name"] || this.name; // fallback to "name" if you didn't specify an exact "button_name"
+  this.bitaddress = config["64bitaddress"];
+  this.bitnetwork = config["16bitnetwork"];
   this.binaryState = 0; // switch state, default is OFF
-  this.log("Starting a PushButton device with name '" + this.buttonName + "'...");
+  this.log("Starting a homebridge-xbee device with name '" + this.buttonName + "'...");
   this.pushButtonService;
   this.timeout = 2; // Timeout in seconds
 }
@@ -24,11 +49,12 @@ PushButtonAccessory.prototype.getPowerOn = function(callback) {
 
 PushButtonAccessory.prototype.setPowerOn = function(powerOn, callback) {
   var self = this;
-  this.binaryState = powerOn ? 1 : 0; // wemo langauge
+  this.binaryState = powerOn ? 1 : 0;
   this.log("Set power state on the '%s' to %s", this.buttonName, this.binaryState);
   callback(null);
 
   if(powerOn) {
+    xbee.trigger(this.bitaddress, this.bitnetwork);
     setTimeout(function() {
       self.log("BEEP! BOOP!");
       self.pushButtonService.getCharacteristic(Characteristic.On).setValue(0);

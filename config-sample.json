@@ -6,15 +6,26 @@
         "pin": "031-45-155"
     },
 
-    "description": "This has some fake accessories",
+    "description": "Awesome homebridge",
 
-    "accessories": [
+    "accessories": [],
+
+    "platforms": [
         {
-            "accessory":    "PushButton",
-            "name":         "Test Button",
-            "button_name":  "Button 1"
+            "platform":   "XBee",
+            "name":       "XBee Devices",
+            "port":       "/dev/ttyAMA",
+            "baudrate":   9600,
+            "api_mode":   1,
+            "devices": [
+                {
+                    "accessory":    "PushButton",
+                    "name":         "Test Button",
+                    "button_name":  "Button 1",
+                    "64bitaddress": "0013A20012345678",
+                    "16bitnetwork": "FFFE"
+                }
+            ]
         }
-    ],
-
-    "platforms": []
+    ]
 }
