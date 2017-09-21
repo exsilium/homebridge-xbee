@@ -17,6 +17,7 @@
             "port":       "/dev/ttyAMA",
             "baudrate":   9600,
             "api_mode":   1,
+            "timeout":    5000,
             "devices": [
                 {
                     "accessory":    "PushButton",

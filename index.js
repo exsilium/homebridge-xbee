@@ -8,11 +8,17 @@ module.exports = function(homebridge) {
 }
 
 function XBeePlatform(log, config) {
+  // If parameters are not sent, just return the xbee object for interfacing
+  if(log === undefined && config === undefined) {
+    return xbee;
+  }
+  
+  // Normal Platform initialization
   this.log = log;
   this.devices = config["devices"];
   
   log("Starting discovery...");
-  xbee.init(log, config.port , config.baudrate, config.api_mode);
+  xbee.init(log, config.port , config.baudrate, config.api_mode, config.timeout || 5000);
 }
 
 XBeePlatform.prototype = {
