@@ -31,8 +31,8 @@ Currently, the trigger signal is hard-coded with the following parameters:
 sourceEndpoint: 0xE8,
 destinationEndpoint: 0xEA,
 clusterId: 0x0006,
-profileId: 0xEAA4,
-data: 0x03
+profileId: 0x0104,
+data: 0x01 0xAB 0x01
 ```
 
 This reflects the signal expected by pxbee-trigger project. In the future, homebridge-xbee will have more options to configure the frames depending on the accessory device.
@@ -43,7 +43,7 @@ Intrigued? Have some XBees doing nothing? Love HomeKit and Homebridge? - Feel fr
 
 # License
 
-Copyright (c) 2016, Sten Feldman
+Copyright (c) 2016 - 2017, Sten Feldman
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

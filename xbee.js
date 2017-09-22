@@ -123,7 +123,7 @@ var xbeeTrigger = function(destination64, destination16) {
       sourceEndpoint: 0xE8,
       destinationEndpoint: 0xEA,
       clusterId: 0x0006,
-      profileId: 0xEAA4,
+      profileId: 0x0104,
       data: dataArray
     };
     serialPort.write(xbeeAPI.buildFrame(frame_obj));
