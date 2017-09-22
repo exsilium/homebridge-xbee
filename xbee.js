@@ -64,9 +64,9 @@ var xbeeInit = function (log, port, baudrate, api_mode, timeout) {
     }, 400, sendFrame);
   });
     
-  var listenerNTTimeout = setTimeout(function() { 
-     xbeeAPI.removeListener("frame_object", listenerNT);
-     logOutput.error("Unable to retrieve NT value from XBee radio, XBee Platform init failed!");
+  listenerNTTimeout = setTimeout(function() { 
+    xbeeAPI.removeListener("frame_object", listenerNT);
+    logOutput.error("Unable to retrieve NT value from XBee radio, XBee Platform init failed!");
   }, localTimeout);
   xbeeAPI.on("frame_object", listenerNT);
 }
@@ -96,6 +96,7 @@ var xbeeDiscover = function(log) {
       xbeeAPI.on("frame_object", listenerND);
       setTimeout(function() { 
         xbeeAPI.removeListener("frame_object", listenerND);
+        logOutput("Device discovery completed!");
       }, discoveryTimer);
   } 
   else {
