@@ -1,6 +1,6 @@
 {
   "name": "homebridge-xbee",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Homebridge Plugin for Digi XBee radio modules. Originally built for sliding and swing gate automation. Provides accessory for impulse-button. Target device project can be found from https://github.com/exsilium/pxbee-trigger",
   "license": "BSD-2-Clause",
   "keywords": [
@@ -21,10 +21,7 @@
     "url": "git://github.com/exsilium/homebridge-xbee.git"
   },
   "dependencies": {
-    "serialport": "~4.0.7",
-    "xbee-api": "~0.5.3"
-  },
-  "devDependencies": {
-    "virtual-serialport": "~4.0.1"
+    "serialport": "~6.0.4",
+    "xbee-api": "~0.6.0"
   }
 }

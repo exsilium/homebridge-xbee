@@ -22,32 +22,12 @@ var xbeeInit = function (log, port, baudrate, api_mode, timeout) {
   xbeeAPI = new xbee_api.XBeeAPI({
     api_mode: api_mode
   });
-
-  if(port === "") {
-    // Fall back to a virtual port
-    SP = require('virtual-serialport');
-  }
   
   serialPort = new SP(port, {
-    baudrate: baudrate,
-    parser: xbeeAPI.rawParser()
+    baudRate: baudrate
   });
   
-  if(port === "") {
-    serialPort.on("data", function(data) {
-      console.log("Computer received: " + data);
-    });
-
-    var raw_frame = new Buffer([
-    0x7E, 0x00, 0x13, 0x97, 0x55, 0x00, 0x13, 0xA2, 0x00, 0x40, 0x52, 0x2B,
-    0xAA, 0x7D, 0x84, 0x53, 0x4C, 0x00, 0x40, 0x52, 0x2B, 0xAA, 0xF0]);
-    
-    serialPort.on("dataToDevice", function(data) {
-      logOutput("Mock NT command received:")
-      logOutput(data);
-      serialPort.writeToComputer("BLEEP!");
-  });
-  }
+  serialPort.pipe(xbeeAPI.parser);
   
   serialPort.on("open", function() {
     log("Serial port open...");
@@ -65,10 +45,10 @@ var xbeeInit = function (log, port, baudrate, api_mode, timeout) {
   });
     
   listenerNTTimeout = setTimeout(function() { 
-    xbeeAPI.removeListener("frame_object", listenerNT);
+    xbeeAPI.parser.removeListener("data", listenerNT);
     logOutput.error("Unable to retrieve NT value from XBee radio, XBee Platform init failed!");
   }, localTimeout);
-  xbeeAPI.on("frame_object", listenerNT);
+  xbeeAPI.parser.on("data", listenerNT);
 }
 
 var listenerNT = function(frame) {
@@ -76,7 +56,7 @@ var listenerNT = function(frame) {
     // NT valid value range is 0x20 - 0xFF * 100ms, 0x3c being default
     discoveryTimer = (frame.commandData[1] & 0xff) * 100 + 1000;
     logOutput("Discovery timer set to: " + discoveryTimer);
-    xbeeAPI.removeListener("frame_object", listenerNT);
+    xbeeAPI.parser.removeListener("data", listenerNT);
     clearTimeout(listenerNTTimeout);
     xbeeDiscover();
   }
@@ -93,9 +73,9 @@ var xbeeDiscover = function(log) {
       var sendFrame = { type: C.FRAME_TYPE.AT_COMMAND, command: "ND", commandParameter: [] };
       serialPort.write(xbeeAPI.buildFrame(sendFrame), function(err) { if (err) throw (err); });
       
-      xbeeAPI.on("frame_object", listenerND);
+      xbeeAPI.parser.on("data", listenerND);
       setTimeout(function() { 
-        xbeeAPI.removeListener("frame_object", listenerND);
+        xbeeAPI.parser.removeListener("data", listenerND);
         logOutput("Device discovery completed!");
       }, discoveryTimer);
   } 
@@ -105,7 +85,7 @@ var xbeeDiscover = function(log) {
 }
 
 var xbeeListenersCount = function() {
-  return xbeeAPI.listeners("frame_object").length;
+  return xbeeAPI.parser.listeners("data").length;
 }
 
 var xbeeTrigger = function(destination64, destination16) {
