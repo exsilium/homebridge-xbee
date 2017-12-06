@@ -3,13 +3,11 @@
 var SP = require('serialport');
 var xbee_api = require('xbee-api');
 var util = require('util');
-var stream_transformer = require('./transformer');
 
 var C = xbee_api.constants;
 
 // xbee.js scoped variables
 var xbeeAPI
-    , xbeeParser
     , serialPort
     , discoveryTimer
     , logOutput
@@ -24,15 +22,12 @@ var xbeeInit = function (log, port, baudrate, api_mode, timeout) {
   xbeeAPI = new xbee_api.XBeeAPI({
     api_mode: api_mode
   });
-
-  // Current version of xbee-api does not support Transformer interface
-  xbeeParser = new stream_transformer(xbeeAPI);
   
   serialPort = new SP(port, {
     baudRate: baudrate
   });
   
-  serialPort.pipe(xbeeParser);
+  serialPort.pipe(xbeeAPI.parser);
   
   serialPort.on("open", function() {
     log("Serial port open...");
@@ -50,10 +45,10 @@ var xbeeInit = function (log, port, baudrate, api_mode, timeout) {
   });
     
   listenerNTTimeout = setTimeout(function() { 
-    xbeeParser.removeListener("frame_object", listenerNT);
+    xbeeAPI.parser.removeListener("data", listenerNT);
     logOutput.error("Unable to retrieve NT value from XBee radio, XBee Platform init failed!");
   }, localTimeout);
-  xbeeParser.on("frame_object", listenerNT);
+  xbeeAPI.parser.on("data", listenerNT);
 }
 
 var listenerNT = function(frame) {
@@ -61,7 +56,7 @@ var listenerNT = function(frame) {
     // NT valid value range is 0x20 - 0xFF * 100ms, 0x3c being default
     discoveryTimer = (frame.commandData[1] & 0xff) * 100 + 1000;
     logOutput("Discovery timer set to: " + discoveryTimer);
-    xbeeParser.removeListener("frame_object", listenerNT);
+    xbeeAPI.parser.removeListener("data", listenerNT);
     clearTimeout(listenerNTTimeout);
     xbeeDiscover();
   }
@@ -78,9 +73,9 @@ var xbeeDiscover = function(log) {
       var sendFrame = { type: C.FRAME_TYPE.AT_COMMAND, command: "ND", commandParameter: [] };
       serialPort.write(xbeeAPI.buildFrame(sendFrame), function(err) { if (err) throw (err); });
       
-      xbeeParser.on("frame_object", listenerND);
+      xbeeAPI.parser.on("data", listenerND);
       setTimeout(function() { 
-        xbeeParser.removeListener("frame_object", listenerND);
+        xbeeAPI.parser.removeListener("data", listenerND);
         logOutput("Device discovery completed!");
       }, discoveryTimer);
   } 
@@ -90,7 +85,7 @@ var xbeeDiscover = function(log) {
 }
 
 var xbeeListenersCount = function() {
-  return xbeeParser.listeners("frame_object").length;
+  return xbeeAPI.parser.listeners("data").length;
 }
 
 var xbeeTrigger = function(destination64, destination16) {
