@@ -15,7 +15,7 @@ function SwitchAccessory(log, config) {
   this.buttonName = config["button_name"] || this.name; // fallback to "name" if you didn't specify an exact "button_name"
   this.bitaddress = config["64bitaddress"];
   this.bitnetwork = config["16bitnetwork"];
-  this.dio = confif["dio"] || "D0"; // fallback to "D0" if configuration doesn't have the DIO defined.
+  this.dio = config["dio"] || "D1"; // fallback to "D1" if configuration doesn't have the DIO defined.
   this.binaryState = 0; // switch state, default is OFF
   this.log("Starting a homebridge-xbee device (Switch) with name '" + this.buttonName + "'...");
   this.switchService;
