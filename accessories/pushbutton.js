@@ -2,17 +2,16 @@
 
 'use strict';
 
-function PushButtonAccessory(log, config, platform) {
+function PushButtonAccessory(log, config) {
   this.log = log;
   this.name = config["name"];
   this.buttonName = config["button_name"] || this.name; // fallback to "name" if you didn't specify an exact "button_name"
   this.bitaddress = config["64bitaddress"];
   this.bitnetwork = config["16bitnetwork"];
   this.binaryState = 0; // switch state, default is OFF
-  this.log("Starting a homebridge-xbee device with name '" + this.buttonName + "'...");
+  this.log("Starting a homebridge-xbee device (PushButton) with name '" + this.buttonName + "'...");
   this.pushButtonService;
   this.timeout = 2; // Timeout in seconds
-  this.xbee = platform;
 }
 
 PushButtonAccessory.prototype.getPowerOn = function(callback) {
@@ -28,7 +27,7 @@ PushButtonAccessory.prototype.setPowerOn = function(powerOn, callback) {
   callback(null);
 
   if(powerOn) {
-    this.xbee.trigger(this.bitaddress, this.bitnetwork);
+    xbee.trigger(this.bitaddress, this.bitnetwork);
     setTimeout(function() {
       self.log("BEEP! BOOP!");
       self.pushButtonService.getCharacteristic(Characteristic.On).setValue(0);

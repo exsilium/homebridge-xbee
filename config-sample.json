@@ -25,6 +25,13 @@
                     "button_name":  "Button 1",
                     "64bitaddress": "0013A20012345678",
                     "16bitnetwork": "FFFE"
+                },{
+                    "accessory":    "Switch",
+                    "name":         "Test Switch",
+                    "button_name":  "Switch 1",
+                    "64bitaddress": "0013A20012345678",
+                    "16bitnetwork": "FFFE",
+                    "dio":          "D0"
                 }
             ]
         }

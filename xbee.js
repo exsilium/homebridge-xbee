@@ -110,8 +110,35 @@ var xbeeTrigger = function(destination64, destination16) {
   }
 }
 
+var xbeeDIO = function(destination64, destination16, dio, state, cb) {
+  if(xbeeAPI && serialPort) {
+    
+    var frame_obj = {
+	    type: C.FRAME_TYPE.REMOTE_AT_COMMAND_REQUEST,
+	    destination64: destination64,
+	    destination16: destination16,
+	    command: dio,
+	    commandParameter: []
+    }
+    
+    if (state === 0) {
+      // Turn Off
+      frame_obj.commandParameter = [ 0x04 ];
+    }
+    else if (state === 1) {
+      // Turn On
+      frame_obj.commandParameter = [ 0x05 ];
+    }
+    else if (state === null) {
+      // Read state
+    }
+    serialPort.write(xbeeAPI.buildFrame(frame_obj));
+  }
+}
+
 module.exports = {
   init: function (log, port, baudrate, api_mode, timeout) { xbeeInit(log, port, baudrate, api_mode, timeout); },
   listenersCount: function() { return xbeeListenersCount(); },
-  trigger: function (destination64, destination16) { xbeeTrigger(destination64, destination16); }
+  trigger: function (destination64, destination16) { xbeeTrigger(destination64, destination16); },
+  dio: function (destination64, destination16, dio, state, cb) { xbeeDIO(destination64, destination16, dio, state, cb); }
 };
