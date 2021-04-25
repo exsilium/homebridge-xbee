@@ -68,7 +68,7 @@ var listenerND = function(frame) {
   }
 }
 
-var xbeeDiscover = function(log) {
+var xbeeDiscover = function() {
   if(xbeeAPI && serialPort) {
       var sendFrame = { type: C.FRAME_TYPE.AT_COMMAND, command: "ND", commandParameter: [] };
       serialPort.write(xbeeAPI.buildFrame(sendFrame), function(err) { if (err) throw (err); });
@@ -80,7 +80,7 @@ var xbeeDiscover = function(log) {
       }, discoveryTimer);
   } 
   else {
-    log("ERROR: XBee init has failed?");
+    logOutput("ERROR: XBee init has failed?");
   }
 }
 
@@ -133,6 +133,20 @@ var xbeeDIO = function(destination64, destination16, dio, state, cb) {
       // Read state
     }
     serialPort.write(xbeeAPI.buildFrame(frame_obj));
+    
+    // Should we do it within a drain callback?
+    var localCommand = function(frame) {
+      logOutput(frame);
+      xbeeAPI.parser.removeListener("data", localCommand);
+      clearTimeout(localCommandTimeout);
+    }
+
+    var localCommandTimeout = setTimeout(function() {
+      xbeeAPI.parser.removeListener("data", localCommand);
+      logOutput.error("Unable to retrieve back DIO confirmation.");
+    }, localTimeout);
+    xbeeAPI.parser.on("data", localCommand);
+    
   }
 }
 
